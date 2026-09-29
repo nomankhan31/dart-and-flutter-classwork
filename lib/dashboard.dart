@@ -208,18 +208,18 @@ class _DashboardState extends State<Dashboard> {
             child: Text('cancel')),
             ElevatedButton(
               onPressed: ()async{
-                String P_Name= name.text.trim();
-                String P_Price = price.text.trim();
-                String P_Description = des.text.trim();
-              double? pri = double.tryParse(P_Price);
-              if(P_Name.isEmpty || pri== null){
+                String pName= name.text.trim();
+                String pPrice = price.text.trim();
+                String pDescription = des.text.trim();
+              double? pri = double.tryParse(pPrice);
+              if(pName.isEmpty || pri== null){
                 ScaffoldMessenger.of(context).
                 showSnackBar(SnackBar(
                   content: Text("please enter a valid name or price")));
                   return;
               }
               try{  
-              await prod.doc(docID).update;
+              prod.doc(docID).update;
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text("product add succssfulyy.....")));
               }
@@ -302,7 +302,140 @@ catch(e){
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text("$e")));
 }
+
   }
+  // ================= Delete User =================
+
+  Future<void>deleteuser(String docID)async{
+bool? confirm = await showDialog(
+  context: context,
+ builder: (dialogContext){
+return AlertDialog(
+title: Text("delete user"),
+content: const Text("are you sure?"),
+actions: [
+  TextButton(
+    onPressed: (){Navigator.pop(context);},
+   child: Text("Cancel")),
+   ElevatedButton(
+    onPressed: (){Navigator.pop(context);},
+    child: Text("Delete")),
+],
+);
+ }
+ ); 
+ if(confirm != true){
+  return;
+ }
+ try
+ {
+  await cust.doc(docID).delete();
+  if(mounted){
+    ScaffoldMessenger.
+    of(context).showSnackBar
+    (SnackBar(content: Text("SuccssFully Deleted")));
+  }
+ }
+ catch(e){
+if(mounted){
+  ScaffoldMessenger.of(context).
+  showSnackBar(SnackBar(content: Text("Error in deleting User$e")));
+}
+ }
+}
+// ================= Edit User =================
+
+void edituser(String docID, Map<String,dynamic>data){
+  final TextEditingController nameedit =TextEditingController(
+    text: data["name"] ?? '',
+  );
+  final TextEditingController ageedit =TextEditingController(
+    text: data["name"] ?? '',
+  );
+  final TextEditingController emailedit =TextEditingController(
+    text: data["name"] ?? '',
+  );
+  final TextEditingController passwordedit=TextEditingController(
+    text: data["name"] ?? '',
+  );
+  showDialog(
+    context: context,
+   builder: (dialogContext){
+    return AlertDialog(
+  title: Text("Edit user"),
+  content: SingleChildScrollView(
+    child: Column(
+      children: [
+        TextField(
+          controller: nameedit,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+          ),
+        ),
+        TextField(
+          controller: ageedit,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+          ),
+        ),
+        TextField(
+          controller: emailedit,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+          ),
+        ),
+        TextField(
+          controller: passwordedit,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+          ),
+        ),
+      ],
+    ),
+  ),
+  actions: [
+    TextButton(onPressed: (){Navigator.pop(dialogContext);},
+     child: Text("cancel")),
+     ElevatedButton(onPressed: ()async{
+    String name = nameedit.text.trim();
+    String age= ageedit.text.trim();
+    String email= emailedit.text.trim();
+    String password= passwordedit.text.trim();
+
+    int? userage = int.tryParse('agetext');
+    
+    if(name.isEmpty || email.isEmpty || age == null || password.isEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please enter a valid value")));
+      return;
+    }
+    try{
+      await cust.doc(docID).update({
+    'name' : name,
+    'email' : email,
+    'age' : age,
+    'password' : password,
+ });
+ if(dialogContext.mounted){
+  Navigator.pop(dialogContext);
+ }
+ if(mounted){
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('user data updated')));
+ }
+    }
+    catch(e){
+
+    }
+    }
+    
+     , child: Text("Update"))
+  ],
+    );
+   });
+
+}
+
+
+
   // ================= Build =================
   @override
   Widget build(BuildContext context) {
