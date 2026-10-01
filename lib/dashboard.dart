@@ -423,7 +423,8 @@ void edituser(String docID, Map<String,dynamic>data){
  }
     }
     catch(e){
-
+   
+   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
     }
     }
     
@@ -432,6 +433,115 @@ void edituser(String docID, Map<String,dynamic>data){
     );
    });
 
+}
+
+Widget dashboadhome (){
+return StreamBuilder<QuerySnapshot>(
+stream: cust.snapshots(),
+builder: (context, snapshot){
+  if(
+snapshot.connectionState == ConnectionState.waiting 
+  )
+  {
+return const Center(
+child: CircularProgressIndicator(),
+);
+  }
+  if(snapshot.hasError){
+    return  Center(
+child: Text("Error ${snapshot.error}"),
+    );
+  }
+
+int totaluser = 0;
+snapshot.data?.docs.length;
+
+int approveduser=0;
+int pendinguser = 0;
+int rejecteduser = 0;
+
+if(snapshot.hasData){
+
+  for(var doc in snapshot.data!.docs)
+  {
+    var data = doc.data() as Map<String, dynamic>;
+    String status = data['stutus'] ?? 'pending';
+
+if(status == 'approved'){
+approveduser++;
+}else if(
+ status =='rejected'
+){
+rejecteduser++;
+} else 
+{  pendinguser++;}
+
+  }
+}
+return SingleChildScrollView(
+  padding: EdgeInsets.all(20),
+child: Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+   Text('Dashboard',
+   style: TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+   ),
+   ),
+   
+   SizedBox(height: 20,),
+   Row(
+    children: [
+      dashboardcard(
+        "Total User",
+        totaluser.toString(),
+        Icons.people,
+      ),
+      SizedBox(height: 20,),
+
+      dashboardcard(
+        "Approved",
+        approveduser.toString(),
+        Icons.check_circle,
+      ),
+    
+    SizedBox(height: 20,),
+
+      dashboardcard(
+        " Pending",
+        approveduser.toString(),
+        Icons.pending,
+      ),
+      SizedBox(height: 20,),
+
+      dashboardcard(
+        "Rejected",
+        approveduser.toString(),
+        Icons.cancel,
+      ),
+    ],
+   )
+
+
+
+
+
+  ],
+),
+);
+
+
+
+
+
+
+
+
+
+
+}
+);
 }
 
 
