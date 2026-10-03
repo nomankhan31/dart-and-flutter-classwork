@@ -25,7 +25,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // ================= Add Product Dialog =================
+  // ================= Add Product =================
 
   void showProductDialog() {
     final TextEditingController pName = TextEditingController();
@@ -37,7 +37,6 @@ class _DashboardState extends State<Dashboard> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text("Add Product"),
-
           content: SingleChildScrollView(
             child: Column(
               children: [
@@ -48,9 +47,7 @@ class _DashboardState extends State<Dashboard> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 TextField(
                   controller: pPrice,
                   keyboardType: TextInputType.number,
@@ -59,9 +56,7 @@ class _DashboardState extends State<Dashboard> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 TextField(
                   controller: pDes,
                   decoration: const InputDecoration(
@@ -69,12 +64,9 @@ class _DashboardState extends State<Dashboard> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-
-                const SizedBox(height: 10),
               ],
             ),
           ),
-
           actions: [
             TextButton(
               onPressed: () {
@@ -82,16 +74,15 @@ class _DashboardState extends State<Dashboard> {
               },
               child: const Text("Cancel"),
             ),
-
             ElevatedButton(
               onPressed: () async {
-                String name = pName.text.trim();
-                String price = pPrice.text.trim();
-                String des = pDes.text.trim();
+                final String name = pName.text.trim();
+                final String price = pPrice.text.trim();
+                final String des = pDes.text.trim();
 
-                double? pri = double.tryParse(price);
+                final double? pri = double.tryParse(price);
 
-                if (name.isEmpty || price.isEmpty || pri == null) {
+                if (name.isEmpty || pri == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
@@ -116,9 +107,7 @@ class _DashboardState extends State<Dashboard> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(
-                          "Product added successfully",
-                        ),
+                        content: Text("Product added successfully"),
                       ),
                     );
                   }
@@ -140,7 +129,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // ================= Edit Product Dialog =================
+  // ================= Edit Product =================
 
   void editProduct(
     String docID,
@@ -163,7 +152,6 @@ class _DashboardState extends State<Dashboard> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text("Edit Product"),
-
           content: SingleChildScrollView(
             child: Column(
               children: [
@@ -174,9 +162,7 @@ class _DashboardState extends State<Dashboard> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 TextFormField(
                   controller: price,
                   keyboardType: TextInputType.number,
@@ -185,9 +171,7 @@ class _DashboardState extends State<Dashboard> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 TextFormField(
                   controller: des,
                   decoration: const InputDecoration(
@@ -195,360 +179,763 @@ class _DashboardState extends State<Dashboard> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-
-                const SizedBox(height: 10),
               ],
             ),
           ),
           actions: [
             TextButton(
-              onPressed: (){
+              onPressed: () {
                 Navigator.pop(dialogContext);
-              }, 
-            child: Text('cancel')),
+              },
+              child: const Text('Cancel'),
+            ),
             ElevatedButton(
-              onPressed: ()async{
-                String pName= name.text.trim();
-                String pPrice = price.text.trim();
-                String pDescription = des.text.trim();
-              double? pri = double.tryParse(pPrice);
-              if(pName.isEmpty || pri== null){
-                ScaffoldMessenger.of(context).
-                showSnackBar(SnackBar(
-                  content: Text("please enter a valid name or price")));
-                  return;
-              }
-              try{  
-              prod.doc(docID).update;
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text("product add succssfulyy.....")));
-              }
-              catch(e){
-                ScaffoldMessenger.of(context).
-                showSnackBar(SnackBar
-                (content: Text("$e")));
-              }
+              onPressed: () async {
+                final String pName = name.text.trim();
+                final String pPrice = price.text.trim();
+                final String pDescription = des.text.trim();
 
-              }, 
-            child: Text("update"))
+                final double? pri = double.tryParse(pPrice);
+
+                if (pName.isEmpty || pri == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        "Please enter a valid name and price",
+                      ),
+                    ),
+                  );
+                  return;
+                }
+
+                try {
+                  // IMPORTANT:
+                  // update() must actually be called with a Map.
+                  await prod.doc(docID).update({
+                    'name': pName,
+                    'price': pri,
+                    'description': pDescription,
+                  });
+
+                  if (dialogContext.mounted) {
+                    Navigator.pop(dialogContext);
+                  }
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Product updated successfully"),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Error: $e"),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text("Update"),
+            ),
           ],
         );
       },
-      
     );
   }
+
   // ================= Delete Product =================
 
-  Future<void> deleteproduct(String docID)async{
-bool? confirm=await showDialog(
-  context: context,
- builder: (dialogContext)
- {
-  return AlertDialog(
-    title: Text("Delete Product"),
-    content: Text('Are you sure for delete your product'),
-    actions: [
-      TextButton(onPressed: (){Navigator.pop(dialogContext,false);}, 
-      child: Text("Cancel")),
-      ElevatedButton(onPressed:
-       (){Navigator.pop(dialogContext,true);},
-       child: Text("Delete"),
-       ),
-    ],
-  );
- }
- );
- if(confirm != true){
-  return;
- }
- try{
-  await prod.doc(docID).delete();
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    content: Text("Product is deleted")));
- }
- catch(e){
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
- }
-  }
-// ================= Approved User =================
-  Future<void> approveduser(String docID)async{
-try{
-  await cust.doc(docID).update({
-    'status' : 'approved'
-  });
-  if(mounted){
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("User Approved")));
-  }
-}
-catch(e){
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("$e")));
-}
-  }
-// ================= Reject User =================
-
-  Future<void> rejectuser(String docID)async{
-try{
-  await cust.doc(docID).update({
-    'status' : 'Rejected'
-  });
-  if(mounted){
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("User Regected")));
-  }
-}
-catch(e){
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("$e")));
-}
-
-  }
-  // ================= Delete User =================
-
-  Future<void>deleteuser(String docID)async{
-bool? confirm = await showDialog(
-  context: context,
- builder: (dialogContext){
-return AlertDialog(
-title: Text("delete user"),
-content: const Text("are you sure?"),
-actions: [
-  TextButton(
-    onPressed: (){Navigator.pop(context);},
-   child: Text("Cancel")),
-   ElevatedButton(
-    onPressed: (){Navigator.pop(context);},
-    child: Text("Delete")),
-],
-);
- }
- ); 
- if(confirm != true){
-  return;
- }
- try
- {
-  await cust.doc(docID).delete();
-  if(mounted){
-    ScaffoldMessenger.
-    of(context).showSnackBar
-    (SnackBar(content: Text("SuccssFully Deleted")));
-  }
- }
- catch(e){
-if(mounted){
-  ScaffoldMessenger.of(context).
-  showSnackBar(SnackBar(content: Text("Error in deleting User$e")));
-}
- }
-}
-// ================= Edit User =================
-
-void edituser(String docID, Map<String,dynamic>data){
-  final TextEditingController nameedit =TextEditingController(
-    text: data["name"] ?? '',
-  );
-  final TextEditingController ageedit =TextEditingController(
-    text: data["name"] ?? '',
-  );
-  final TextEditingController emailedit =TextEditingController(
-    text: data["name"] ?? '',
-  );
-  final TextEditingController passwordedit=TextEditingController(
-    text: data["name"] ?? '',
-  );
-  showDialog(
-    context: context,
-   builder: (dialogContext){
-    return AlertDialog(
-  title: Text("Edit user"),
-  content: SingleChildScrollView(
-    child: Column(
-      children: [
-        TextField(
-          controller: nameedit,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
+  Future<void> deleteproduct(String docID) async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Delete Product"),
+          content: const Text(
+            "Are you sure you want to delete this product?",
           ),
-        ),
-        TextField(
-          controller: ageedit,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-          ),
-        ),
-        TextField(
-          controller: emailedit,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-          ),
-        ),
-        TextField(
-          controller: passwordedit,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-          ),
-        ),
-      ],
-    ),
-  ),
-  actions: [
-    TextButton(onPressed: (){Navigator.pop(dialogContext);},
-     child: Text("cancel")),
-     ElevatedButton(onPressed: ()async{
-    String name = nameedit.text.trim();
-    String age= ageedit.text.trim();
-    String email= emailedit.text.trim();
-    String password= passwordedit.text.trim();
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text("Delete"),
+            ),
+          ],
+        );
+      },
+    );
 
-    int? userage = int.tryParse('agetext');
-    
-    if(name.isEmpty || email.isEmpty || age == null || password.isEmpty){
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please enter a valid value")));
+    if (confirm != true) {
       return;
     }
-    try{
+
+    try {
+      await prod.doc(docID).delete();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Product deleted"),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: $e"),
+          ),
+        );
+      }
+    }
+  }
+
+  // ================= Approve User =================
+
+  Future<void> approveduser(String docID) async {
+    try {
       await cust.doc(docID).update({
-    'name' : name,
-    'email' : email,
-    'age' : age,
-    'password' : password,
- });
- if(dialogContext.mounted){
-  Navigator.pop(dialogContext);
- }
- if(mounted){
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('user data updated')));
- }
+        'status': 'approved',
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("User approved"),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("$e"),
+          ),
+        );
+      }
     }
-    catch(e){
-   
-   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+  }
+
+  // ================= Reject User =================
+
+  Future<void> rejectuser(String docID) async {
+    try {
+      await cust.doc(docID).update({
+        'status': 'rejected',
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("User rejected"),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("$e"),
+          ),
+        );
+      }
     }
-    }
-    
-     , child: Text("Update"))
-  ],
+  }
+
+  // ================= Delete User =================
+
+  Future<void> deleteuser(String docID) async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Delete User"),
+          content: const Text("Are you sure?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text("Delete"),
+            ),
+          ],
+        );
+      },
     );
-   });
 
-}
+    if (confirm != true) {
+      return;
+    }
 
-Widget dashboadhome (){
-return StreamBuilder<QuerySnapshot>(
-stream: cust.snapshots(),
-builder: (context, snapshot){
-  if(
-snapshot.connectionState == ConnectionState.waiting 
-  )
-  {
-return const Center(
-child: CircularProgressIndicator(),
-);
+    try {
+      await cust.doc(docID).delete();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Successfully deleted"),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error in deleting user: $e"),
+          ),
+        );
+      }
+    }
   }
-  if(snapshot.hasError){
-    return  Center(
-child: Text("Error ${snapshot.error}"),
+
+  // ================= Edit User =================
+
+  void edituser(
+    String docID,
+    Map<String, dynamic> data,
+  ) {
+    final TextEditingController nameedit = TextEditingController(
+      text: data["name"]?.toString() ?? '',
+    );
+
+    final TextEditingController ageedit = TextEditingController(
+      text: data["age"]?.toString() ?? '',
+    );
+
+    final TextEditingController emailedit = TextEditingController(
+      text: data["email"]?.toString() ?? '',
+    );
+
+    final TextEditingController passwordedit = TextEditingController(
+      text: data["password"]?.toString() ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Edit User"),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: nameedit,
+                  decoration: const InputDecoration(
+                    labelText: "Name",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: ageedit,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Age",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: emailedit,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: "Email",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: passwordedit,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: "Password",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final String name = nameedit.text.trim();
+                final String age = ageedit.text.trim();
+                final String email = emailedit.text.trim();
+                final String password = passwordedit.text.trim();
+
+                final int? userAge = int.tryParse(age);
+
+                if (name.isEmpty ||
+                    email.isEmpty ||
+                    userAge == null ||
+                    password.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please enter valid values"),
+                    ),
+                  );
+                  return;
+                }
+
+                try {
+                  await cust.doc(docID).update({
+                    'name': name,
+                    'email': email,
+                    'age': userAge,
+                    'password': password,
+                  });
+
+                  if (dialogContext.mounted) {
+                    Navigator.pop(dialogContext);
+                  }
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("User data updated"),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("$e"),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text("Update"),
+            ),
+          ],
+        );
+      },
     );
   }
 
-int totaluser = 0;
-snapshot.data?.docs.length;
+  // ================= Dashboard Home =================
 
-int approveduser=0;
-int pendinguser = 0;
-int rejecteduser = 0;
+  Widget dashboadhome() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: cust.snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
 
-if(snapshot.hasData){
+        if (snapshot.hasError) {
+          return Center(
+            child: Text("Error ${snapshot.error}"),
+          );
+        }
 
-  for(var doc in snapshot.data!.docs)
-  {
-    var data = doc.data() as Map<String, dynamic>;
-    String status = data['stutus'] ?? 'pending';
+        if (!snapshot.hasData) {
+          return const Center(
+            child: Text("No data found"),
+          );
+        }
 
-if(status == 'approved'){
-approveduser++;
-}else if(
- status =='rejected'
-){
-rejecteduser++;
-} else 
-{  pendinguser++;}
+        final int totaluser = snapshot.data!.docs.length;
 
+        int approvedUser = 0;
+        int pendingUser = 0;
+        int rejectedUser = 0;
+
+        for (var doc in snapshot.data!.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+
+          // FIXED: status, not stutus
+          final String status =
+              data['status']?.toString().toLowerCase() ?? 'pending';
+
+          if (status == 'approved') {
+            approvedUser++;
+          } else if (status == 'rejected') {
+            rejectedUser++;
+          } else {
+            pendingUser++;
+          }
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Dashboard',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Using Wrap prevents overflow on smaller screens.
+              Wrap(
+                spacing: 15,
+                runSpacing: 15,
+                children: [
+                  dashboardcard(
+                    "Total User",
+                    totaluser.toString(),
+                    Icons.people,
+                  ),
+                  dashboardcard(
+                    "Approved",
+                    approvedUser.toString(),
+                    Icons.check_circle,
+                  ),
+                  dashboardcard(
+                    "Pending",
+                    pendingUser.toString(),
+                    Icons.pending,
+                  ),
+                  dashboardcard(
+                    "Rejected",
+                    rejectedUser.toString(),
+                    Icons.cancel,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
-}
-return SingleChildScrollView(
-  padding: EdgeInsets.all(20),
-child: Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-   Text('Dashboard',
-   style: TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-   ),
-   ),
-   
-   SizedBox(height: 20,),
-   Row(
-    children: [
-      dashboardcard(
-        "Total User",
-        totaluser.toString(),
-        Icons.people,
+
+  // ================= Dashboard Card =================
+
+  Widget dashboardcard(
+    String title,
+    String value,
+    IconData icon,
+  ) {
+    return SizedBox(
+      width: 220,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 40,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(title),
+            ],
+          ),
+        ),
       ),
-      SizedBox(height: 20,),
+    );
+  }
 
-      dashboardcard(
-        "Approved",
-        approveduser.toString(),
-        Icons.check_circle,
+  // ================= Product Page =================
+
+  Widget productpage() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Product Page",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: showProductDialog,
+                icon: const Icon(Icons.add),
+                label: const Text('Add Product'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: prod.snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text("Error ${snapshot.error}"),
+                  );
+                }
+
+                if (!snapshot.hasData ||
+                    snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text("No data found"),
+                  );
+                }
+
+                final products = snapshot.data!.docs;
+
+                return ListView.builder(
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final doc = products[index];
+
+                    final data =
+                        doc.data() as Map<String, dynamic>;
+
+                    final String name =
+                        data['name']?.toString() ?? '';
+
+                    final String price =
+                        data['price']?.toString() ?? '0';
+
+                    final String description =
+                        data['description']?.toString() ?? '';
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: ListTile(
+                        title: Text(name),
+                        subtitle: Text(
+                          "Price: $price\n$description",
+                        ),
+                        isThreeLine: true,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.edit,
+                                color: Colors.blue,
+                              ),
+                              onPressed: () {
+                                editProduct(
+                                  doc.id,
+                                  data,
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ),
+                              onPressed: () {
+                                deleteproduct(doc.id);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
-    
-    SizedBox(height: 20,),
+    );
+  }
 
-      dashboardcard(
-        " Pending",
-        approveduser.toString(),
-        Icons.pending,
+  // ================= User Page =================
+
+  Widget userpage() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "User Management",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: cust.snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text("Error ${snapshot.error}"),
+                  );
+                }
+
+                if (!snapshot.hasData ||
+                    snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text("No users found"),
+                  );
+                }
+
+                final users = snapshot.data!.docs;
+
+                return ListView.builder(
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    final doc = users[index];
+
+                    final data =
+                        doc.data() as Map<String, dynamic>;
+
+                    final String name =
+                        data['name']?.toString() ?? '';
+
+                    final String email =
+                        data['email']?.toString() ?? '';
+
+                    final String age =
+                        data['age']?.toString() ?? '';
+
+                    final String status =
+                        data['status']?.toString() ?? 'pending';
+
+                    return Card(
+                      child: ListTile(
+                        title: Text(name),
+                        subtitle: Text(
+                          "$email\nAge: $age\nStatus: $status",
+                        ),
+                        isThreeLine: true,
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'approve') {
+                              approveduser(doc.id);
+                            } else if (value == 'reject') {
+                              rejectuser(doc.id);
+                            } else if (value == 'edit') {
+                              edituser(doc.id, data);
+                            } else if (value == 'delete') {
+                              deleteuser(doc.id);
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'approve',
+                              child: Text("Approve"),
+                            ),
+                            const PopupMenuItem(
+                              value: 'reject',
+                              child: Text("Reject"),
+                            ),
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Text("Edit"),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text("Delete"),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
-      SizedBox(height: 20,),
-
-      dashboardcard(
-        "Rejected",
-        approveduser.toString(),
-        Icons.cancel,
-      ),
-    ],
-   )
-
-
-
-
-
-  ],
-),
-);
-
-
-
-
-
-
-
-
-
-
-}
-);
-}
-
-
+    );
+  }
 
   // ================= Build =================
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    final List<Widget> pages = [
+      dashboadhome(),
+      userpage(),
+      productpage(),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Admin Dashboard"),
+        actions: [
+          IconButton(
+            onPressed: logout,
+            icon: const Icon(Icons.logout),
+          ),
+        ],
+      ),
+
+      body: pages[selectIndex],
+
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: selectIndex,
+        onTap: (index) {
+          setState(() {
+            selectIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: "Dashboard",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: "Users",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: "Products",
+          ),
+        ],
+      ),
+    );
   }
 }
