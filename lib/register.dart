@@ -9,61 +9,152 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
+  final TextEditingController name = TextEditingController();
+  final TextEditingController age = TextEditingController();
+  final TextEditingController email = TextEditingController();
+  final TextEditingController password = TextEditingController();
 
-TextEditingController name =TextEditingController();
-TextEditingController age =TextEditingController();
-TextEditingController email =TextEditingController();
-TextEditingController password =TextEditingController();
+  // IMPORTANT:
+  // Use the same collection name everywhere.
+  final CollectionReference reg =
+      FirebaseFirestore.instance.collection('customer');
 
-final CollectionReference reg = FirebaseFirestore.instance.collection('Customer');
+  @override
+  void dispose() {
+    name.dispose();
+    age.dispose();
+    email.dispose();
+    password.dispose();
+    super.dispose();
+  }
 
+  // ================= Add User =================
 
-Future <void> adduser(BuildContext)async{
+  Future<void> adduser() async {
+    final String userName = name.text.trim();
+    final String userAge = age.text.trim();
+    final String userEmail = email.text.trim();
+    final String userPassword = password.text.trim();
 
-await reg.add({
+    final int? ageValue = int.tryParse(userAge);
 
-'name' : name.text.trim(),
-'age' : age.text.trim(),
-'email' : email.text.trim(),
-'password' : password.text.trim(),
-'role' : 'user',
-});
-Navigator.pushNamed(context,'/login');
-}
+    // Validation
+    if (userName.isEmpty ||
+        ageValue == null ||
+        userEmail.isEmpty ||
+        userPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter all valid information"),
+        ),
+      );
+      return;
+    }
+
+    try {
+      await reg.add({
+        'name': userName,
+        'age': ageValue,
+        'email': userEmail,
+        'password': userPassword,
+        'role': 'user',
+        'status': 'pending',
+      });
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Registration successful"),
+        ),
+      );
+
+      Navigator.pushNamed(context, '/login');
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Registration failed: $e"),
+        ),
+      );
+    }
+  }
+
+  // ================= Build =================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  
-  body: Column(
-    children: [
-      TextField(
-    controller: name,
-    decoration: InputDecoration(
-      labelText: 'Name'
-    ),
-  ),
-  TextField(
-    controller: age,
-    decoration: InputDecoration(
-      labelText: 'Age'
-    ),
-  ),
-  TextField(
-    controller: email,
-    decoration: InputDecoration(
-      labelText: 'Email'
-    ),
-  ),
-  TextField(
-    controller: password,
-    decoration: InputDecoration(
-      labelText: 'Password'
-    ),
-  ),
-    ],
-  ),
+      appBar: AppBar(
+        title: const Text("Register"),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            TextField(
+              controller: name,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
 
-        
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: age,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Age',
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: email,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: password,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: adduser,
+                child: const Text("Register"),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/login');
+              },
+              child: const Text("Already have an account? Login"),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
