@@ -9,6 +9,8 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  // ================= FIRESTORE =================
+
   final CollectionReference cust =
       FirebaseFirestore.instance.collection('customer');
 
@@ -16,6 +18,8 @@ class _DashboardState extends State<Dashboard> {
       FirebaseFirestore.instance.collection('product');
 
   int selectIndex = 0;
+
+  // ================= LOGOUT =================
 
   void logout() {
     Navigator.pushNamedAndRemoveUntil(
@@ -25,12 +29,14 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // ================= Add Product =================
+  // =========================================================
+  // ADD PRODUCT
+  // =========================================================
 
   void showProductDialog() {
-    final TextEditingController pName = TextEditingController();
-    final TextEditingController pPrice = TextEditingController();
-    final TextEditingController pDes = TextEditingController();
+    final nameController = TextEditingController();
+    final priceController = TextEditingController();
+    final descriptionController = TextEditingController();
 
     showDialog(
       context: context,
@@ -41,32 +47,38 @@ class _DashboardState extends State<Dashboard> {
             child: Column(
               children: [
                 TextField(
-                  controller: pName,
+                  controller: nameController,
                   decoration: const InputDecoration(
-                    labelText: "P_Name",
+                    labelText: "Product Name",
                     border: OutlineInputBorder(),
                   ),
                 ),
+
                 const SizedBox(height: 10),
+
                 TextField(
-                  controller: pPrice,
+                  controller: priceController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: "P_Price",
+                    labelText: "Price",
                     border: OutlineInputBorder(),
                   ),
                 ),
+
                 const SizedBox(height: 10),
+
                 TextField(
-                  controller: pDes,
+                  controller: descriptionController,
+                  maxLines: 3,
                   decoration: const InputDecoration(
-                    labelText: "P_Description",
+                    labelText: "Description",
                     border: OutlineInputBorder(),
                   ),
                 ),
               ],
             ),
           ),
+
           actions: [
             TextButton(
               onPressed: () {
@@ -74,19 +86,21 @@ class _DashboardState extends State<Dashboard> {
               },
               child: const Text("Cancel"),
             ),
+
             ElevatedButton(
               onPressed: () async {
-                final String name = pName.text.trim();
-                final String price = pPrice.text.trim();
-                final String des = pDes.text.trim();
+                final name = nameController.text.trim();
+                final priceText = priceController.text.trim();
+                final description =
+                    descriptionController.text.trim();
 
-                final double? pri = double.tryParse(price);
+                final price = double.tryParse(priceText);
 
-                if (name.isEmpty || pri == null) {
+                if (name.isEmpty || price == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                        "Please enter a valid product name and price",
+                        "Please enter valid product name and price",
                       ),
                     ),
                   );
@@ -95,9 +109,9 @@ class _DashboardState extends State<Dashboard> {
 
                 try {
                   await prod.add({
-                    'name': name,
-                    'price': pri,
-                    'description': des,
+                    "name": name,
+                    "price": price,
+                    "description": description,
                   });
 
                   if (dialogContext.mounted) {
@@ -107,7 +121,9 @@ class _DashboardState extends State<Dashboard> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("Product added successfully"),
+                        content: Text(
+                          "Product added successfully",
+                        ),
                       ),
                     );
                   }
@@ -121,7 +137,7 @@ class _DashboardState extends State<Dashboard> {
                   }
                 }
               },
-              child: const Text("Add Product"),
+              child: const Text("Add"),
             ),
           ],
         );
@@ -129,22 +145,24 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // ================= Edit Product =================
+  // =========================================================
+  // EDIT PRODUCT
+  // =========================================================
 
   void editProduct(
     String docID,
     Map<String, dynamic> data,
   ) {
-    final TextEditingController name = TextEditingController(
-      text: data['name']?.toString() ?? '',
+    final nameController = TextEditingController(
+      text: data["name"]?.toString() ?? "",
     );
 
-    final TextEditingController price = TextEditingController(
-      text: data['price']?.toString() ?? '',
+    final priceController = TextEditingController(
+      text: data["price"]?.toString() ?? "",
     );
 
-    final TextEditingController des = TextEditingController(
-      text: data['description']?.toString() ?? '',
+    final descriptionController = TextEditingController(
+      text: data["description"]?.toString() ?? "",
     );
 
     showDialog(
@@ -152,56 +170,65 @@ class _DashboardState extends State<Dashboard> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text("Edit Product"),
+
           content: SingleChildScrollView(
             child: Column(
               children: [
-                TextFormField(
-                  controller: name,
+                TextField(
+                  controller: nameController,
                   decoration: const InputDecoration(
-                    labelText: 'Name',
+                    labelText: "Product Name",
                     border: OutlineInputBorder(),
                   ),
                 ),
+
                 const SizedBox(height: 10),
-                TextFormField(
-                  controller: price,
+
+                TextField(
+                  controller: priceController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: 'Price',
+                    labelText: "Price",
                     border: OutlineInputBorder(),
                   ),
                 ),
+
                 const SizedBox(height: 10),
-                TextFormField(
-                  controller: des,
+
+                TextField(
+                  controller: descriptionController,
+                  maxLines: 3,
                   decoration: const InputDecoration(
-                    labelText: 'Description',
+                    labelText: "Description",
                     border: OutlineInputBorder(),
                   ),
                 ),
               ],
             ),
           ),
+
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
               },
-              child: const Text('Cancel'),
+              child: const Text("Cancel"),
             ),
+
             ElevatedButton(
               onPressed: () async {
-                final String pName = name.text.trim();
-                final String pPrice = price.text.trim();
-                final String pDescription = des.text.trim();
+                final name = nameController.text.trim();
+                final priceText = priceController.text.trim();
+                final description =
+                    descriptionController.text.trim();
 
-                final double? pri = double.tryParse(pPrice);
+                final price = double.tryParse(priceText);
 
-                if (pName.isEmpty || pri == null) {
+                if (name.isEmpty || price == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                        "Please enter a valid name and price",
+                        "Please enter valid information",
                       ),
                     ),
                   );
@@ -209,12 +236,10 @@ class _DashboardState extends State<Dashboard> {
                 }
 
                 try {
-                  // IMPORTANT:
-                  // update() must actually be called with a Map.
                   await prod.doc(docID).update({
-                    'name': pName,
-                    'price': pri,
-                    'description': pDescription,
+                    "name": name,
+                    "price": price,
+                    "description": description,
                   });
 
                   if (dialogContext.mounted) {
@@ -224,7 +249,9 @@ class _DashboardState extends State<Dashboard> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("Product updated successfully"),
+                        content: Text(
+                          "Product updated successfully",
+                        ),
                       ),
                     );
                   }
@@ -246,17 +273,21 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // ================= Delete Product =================
+  // =========================================================
+  // DELETE PRODUCT
+  // =========================================================
 
-  Future<void> deleteproduct(String docID) async {
-    final bool? confirm = await showDialog<bool>(
+  Future<void> deleteProduct(String docID) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text("Delete Product"),
+
           content: const Text(
             "Are you sure you want to delete this product?",
           ),
+
           actions: [
             TextButton(
               onPressed: () {
@@ -264,6 +295,7 @@ class _DashboardState extends State<Dashboard> {
               },
               child: const Text("Cancel"),
             ),
+
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(dialogContext, true);
@@ -275,9 +307,7 @@ class _DashboardState extends State<Dashboard> {
       },
     );
 
-    if (confirm != true) {
-      return;
-    }
+    if (confirm != true) return;
 
     try {
       await prod.doc(docID).delete();
@@ -300,12 +330,14 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  // ================= Approve User =================
+  // =========================================================
+  // APPROVE USER
+  // =========================================================
 
-  Future<void> approveduser(String docID) async {
+  Future<void> approveUser(String docID) async {
     try {
       await cust.doc(docID).update({
-        'status': 'approved',
+        "status": "approved",
       });
 
       if (mounted) {
@@ -319,19 +351,21 @@ class _DashboardState extends State<Dashboard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("$e"),
+            content: Text("Error: $e"),
           ),
         );
       }
     }
   }
 
-  // ================= Reject User =================
+  // =========================================================
+  // REJECT USER
+  // =========================================================
 
-  Future<void> rejectuser(String docID) async {
+  Future<void> rejectUser(String docID) async {
     try {
       await cust.doc(docID).update({
-        'status': 'rejected',
+        "status": "rejected",
       });
 
       if (mounted) {
@@ -345,22 +379,28 @@ class _DashboardState extends State<Dashboard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("$e"),
+            content: Text("Error: $e"),
           ),
         );
       }
     }
   }
 
-  // ================= Delete User =================
+  // =========================================================
+  // DELETE USER
+  // =========================================================
 
-  Future<void> deleteuser(String docID) async {
-    final bool? confirm = await showDialog<bool>(
+  Future<void> deleteUser(String docID) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text("Delete User"),
-          content: const Text("Are you sure?"),
+
+          content: const Text(
+            "Are you sure you want to delete this user?",
+          ),
+
           actions: [
             TextButton(
               onPressed: () {
@@ -368,6 +408,7 @@ class _DashboardState extends State<Dashboard> {
               },
               child: const Text("Cancel"),
             ),
+
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(dialogContext, true);
@@ -379,9 +420,7 @@ class _DashboardState extends State<Dashboard> {
       },
     );
 
-    if (confirm != true) {
-      return;
-    }
+    if (confirm != true) return;
 
     try {
       await cust.doc(docID).delete();
@@ -389,7 +428,7 @@ class _DashboardState extends State<Dashboard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Successfully deleted"),
+            content: Text("User deleted successfully"),
           ),
         );
       }
@@ -397,33 +436,31 @@ class _DashboardState extends State<Dashboard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Error in deleting user: $e"),
+            content: Text("Error: $e"),
           ),
         );
       }
     }
   }
 
-  // ================= Edit User =================
+  // =========================================================
+  // EDIT USER
+  // =========================================================
 
-  void edituser(
+  void editUser(
     String docID,
     Map<String, dynamic> data,
   ) {
-    final TextEditingController nameedit = TextEditingController(
-      text: data["name"]?.toString() ?? '',
+    final nameController = TextEditingController(
+      text: data["name"]?.toString() ?? "",
     );
 
-    final TextEditingController ageedit = TextEditingController(
-      text: data["age"]?.toString() ?? '',
+    final ageController = TextEditingController(
+      text: data["age"]?.toString() ?? "",
     );
 
-    final TextEditingController emailedit = TextEditingController(
-      text: data["email"]?.toString() ?? '',
-    );
-
-    final TextEditingController passwordedit = TextEditingController(
-      text: data["password"]?.toString() ?? '',
+    final emailController = TextEditingController(
+      text: data["email"]?.toString() ?? "",
     );
 
     showDialog(
@@ -431,46 +468,43 @@ class _DashboardState extends State<Dashboard> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text("Edit User"),
+
           content: SingleChildScrollView(
             child: Column(
               children: [
                 TextField(
-                  controller: nameedit,
+                  controller: nameController,
                   decoration: const InputDecoration(
                     labelText: "Name",
                     border: OutlineInputBorder(),
                   ),
                 ),
+
                 const SizedBox(height: 10),
+
                 TextField(
-                  controller: ageedit,
+                  controller: ageController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: "Age",
                     border: OutlineInputBorder(),
                   ),
                 ),
+
                 const SizedBox(height: 10),
+
                 TextField(
-                  controller: emailedit,
+                  controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     labelText: "Email",
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: passwordedit,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: "Password",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
               ],
             ),
           ),
+
           actions: [
             TextButton(
               onPressed: () {
@@ -478,22 +512,23 @@ class _DashboardState extends State<Dashboard> {
               },
               child: const Text("Cancel"),
             ),
+
             ElevatedButton(
               onPressed: () async {
-                final String name = nameedit.text.trim();
-                final String age = ageedit.text.trim();
-                final String email = emailedit.text.trim();
-                final String password = passwordedit.text.trim();
+                final name = nameController.text.trim();
+                final ageText = ageController.text.trim();
+                final email = emailController.text.trim();
 
-                final int? userAge = int.tryParse(age);
+                final age = int.tryParse(ageText);
 
                 if (name.isEmpty ||
                     email.isEmpty ||
-                    userAge == null ||
-                    password.isEmpty) {
+                    age == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text("Please enter valid values"),
+                      content: Text(
+                        "Please enter valid information",
+                      ),
                     ),
                   );
                   return;
@@ -501,10 +536,9 @@ class _DashboardState extends State<Dashboard> {
 
                 try {
                   await cust.doc(docID).update({
-                    'name': name,
-                    'email': email,
-                    'age': userAge,
-                    'password': password,
+                    "name": name,
+                    "age": age,
+                    "email": email,
                   });
 
                   if (dialogContext.mounted) {
@@ -514,7 +548,9 @@ class _DashboardState extends State<Dashboard> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("User data updated"),
+                        content: Text(
+                          "User updated successfully",
+                        ),
                       ),
                     );
                   }
@@ -522,7 +558,7 @@ class _DashboardState extends State<Dashboard> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text("$e"),
+                        content: Text("Error: $e"),
                       ),
                     );
                   }
@@ -536,13 +572,17 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // ================= Dashboard Home =================
+  // =========================================================
+  // DASHBOARD HOME
+  // =========================================================
 
-  Widget dashboadhome() {
+  Widget dashboardHome() {
     return StreamBuilder<QuerySnapshot>(
       stream: cust.snapshots(),
+
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState ==
+            ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
           );
@@ -550,7 +590,9 @@ class _DashboardState extends State<Dashboard> {
 
         if (snapshot.hasError) {
           return Center(
-            child: Text("Error ${snapshot.error}"),
+            child: Text(
+              "Error: ${snapshot.error}",
+            ),
           );
         }
 
@@ -560,65 +602,73 @@ class _DashboardState extends State<Dashboard> {
           );
         }
 
-        final int totaluser = snapshot.data!.docs.length;
+        final users = snapshot.data!.docs;
 
-        int approvedUser = 0;
-        int pendingUser = 0;
-        int rejectedUser = 0;
+        int approved = 0;
+        int pending = 0;
+        int rejected = 0;
 
-        for (var doc in snapshot.data!.docs) {
-          final data = doc.data() as Map<String, dynamic>;
+        for (var doc in users) {
+          final data =
+              doc.data() as Map<String, dynamic>;
 
-          // FIXED: status, not stutus
-          final String status =
-              data['status']?.toString().toLowerCase() ?? 'pending';
+          final status =
+              data["status"]?.toString().toLowerCase() ??
+                  "pending";
 
-          if (status == 'approved') {
-            approvedUser++;
-          } else if (status == 'rejected') {
-            rejectedUser++;
+          if (status == "approved") {
+            approved++;
+          } else if (status == "rejected") {
+            rejected++;
           } else {
-            pendingUser++;
+            pending++;
           }
         }
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
+
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+
             children: [
               const Text(
-                'Dashboard',
+                "Dashboard",
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 25,
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               const SizedBox(height: 20),
 
-              // Using Wrap prevents overflow on smaller screens.
               Wrap(
                 spacing: 15,
                 runSpacing: 15,
+
                 children: [
-                  dashboardcard(
-                    "Total User",
-                    totaluser.toString(),
+                  dashboardCard(
+                    "Total Users",
+                    users.length.toString(),
                     Icons.people,
                   ),
-                  dashboardcard(
+
+                  dashboardCard(
                     "Approved",
-                    approvedUser.toString(),
+                    approved.toString(),
                     Icons.check_circle,
                   ),
-                  dashboardcard(
+
+                  dashboardCard(
                     "Pending",
-                    pendingUser.toString(),
+                    pending.toString(),
                     Icons.pending,
                   ),
-                  dashboardcard(
+
+                  dashboardCard(
                     "Rejected",
-                    rejectedUser.toString(),
+                    rejected.toString(),
                     Icons.cancel,
                   ),
                 ],
@@ -630,33 +680,49 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // ================= Dashboard Card =================
+  // =========================================================
+  // DASHBOARD CARD
+  // =========================================================
 
-  Widget dashboardcard(
+  Widget dashboardCard(
     String title,
     String value,
     IconData icon,
   ) {
     return SizedBox(
-      width: 220,
+      width: 210,
+
       child: Card(
+        elevation: 3,
+
         child: Padding(
           padding: const EdgeInsets.all(20),
+
           child: Column(
             children: [
               Icon(
                 icon,
                 size: 40,
               ),
-              const SizedBox(height: 20),
+
+              const SizedBox(height: 10),
+
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 25,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(title),
+
+              const SizedBox(height: 5),
+
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                ),
+              ),
             ],
           ),
         ),
@@ -664,35 +730,43 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // ================= Product Page =================
+  // =========================================================
+  // PRODUCT PAGE
+  // =========================================================
 
-  Widget productpage() {
+  Widget productPage() {
     return Padding(
       padding: const EdgeInsets.all(20),
+
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment:
+                MainAxisAlignment.spaceBetween,
+
             children: [
               const Text(
-                "Product Page",
+                "Products",
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               ElevatedButton.icon(
                 onPressed: showProductDialog,
                 icon: const Icon(Icons.add),
-                label: const Text('Add Product'),
+                label: const Text("Add Product"),
               ),
             ],
           ),
+
           const SizedBox(height: 20),
 
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: prod.snapshots(),
+
               builder: (context, snapshot) {
                 if (snapshot.connectionState ==
                     ConnectionState.waiting) {
@@ -703,67 +777,100 @@ class _DashboardState extends State<Dashboard> {
 
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text("Error ${snapshot.error}"),
+                    child: Text(
+                      "Error: ${snapshot.error}",
+                    ),
                   );
                 }
 
                 if (!snapshot.hasData ||
                     snapshot.data!.docs.isEmpty) {
                   return const Center(
-                    child: Text("No data found"),
+                    child: Text(
+                      "No products found",
+                    ),
                   );
                 }
 
-                final products = snapshot.data!.docs;
+                final products =
+                    snapshot.data!.docs;
 
                 return ListView.builder(
                   itemCount: products.length,
+
                   itemBuilder: (context, index) {
                     final doc = products[index];
 
                     final data =
-                        doc.data() as Map<String, dynamic>;
+                        doc.data()
+                            as Map<String, dynamic>;
 
-                    final String name =
-                        data['name']?.toString() ?? '';
+                    final name =
+                        data["name"]?.toString() ?? "";
 
-                    final String price =
-                        data['price']?.toString() ?? '0';
+                    final price =
+                        data["price"]?.toString() ?? "0";
 
-                    final String description =
-                        data['description']?.toString() ?? '';
+                    final description =
+                        data["description"]?.toString() ??
+                            "";
 
                     return Card(
-                      margin: const EdgeInsets.only(bottom: 10),
+                      margin:
+                          const EdgeInsets.only(bottom: 10),
+
                       child: ListTile(
-                        title: Text(name),
-                        subtitle: Text(
-                          "Price: $price\n$description",
+                        leading: CircleAvatar(
+                          child: Text(
+                            name.isNotEmpty
+                                ? name[0].toUpperCase()
+                                : "?",
+                          ),
                         ),
+
+                        title: Text(
+                          name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        subtitle: Text(
+                          "Price: Rs. $price\n$description",
+                        ),
+
                         isThreeLine: true,
+
                         trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisSize:
+                              MainAxisSize.min,
+
                           children: [
                             IconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                                color: Colors.blue,
-                              ),
                               onPressed: () {
                                 editProduct(
                                   doc.id,
                                   data,
                                 );
                               },
+
+                              icon: const Icon(
+                                Icons.edit,
+                                color: Colors.blue,
+                              ),
                             ),
+
                             IconButton(
+                              onPressed: () {
+                                deleteProduct(
+                                  doc.id,
+                                );
+                              },
+
                               icon: const Icon(
                                 Icons.delete,
                                 color: Colors.red,
                               ),
-                              onPressed: () {
-                                deleteproduct(doc.id);
-                              },
                             ),
                           ],
                         ),
@@ -779,25 +886,33 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // ================= User Page =================
+  // =========================================================
+  // USER PAGE
+  // =========================================================
 
-  Widget userpage() {
+  Widget userPage() {
     return Padding(
       padding: const EdgeInsets.all(20),
+
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
         children: [
           const Text(
             "User Management",
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
+
           const SizedBox(height: 20),
+
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: cust.snapshots(),
+
               builder: (context, snapshot) {
                 if (snapshot.connectionState ==
                     ConnectionState.waiting) {
@@ -808,76 +923,121 @@ class _DashboardState extends State<Dashboard> {
 
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text("Error ${snapshot.error}"),
+                    child: Text(
+                      "Error: ${snapshot.error}",
+                    ),
                   );
                 }
 
                 if (!snapshot.hasData ||
                     snapshot.data!.docs.isEmpty) {
                   return const Center(
-                    child: Text("No users found"),
+                    child: Text(
+                      "No users found",
+                    ),
                   );
                 }
 
-                final users = snapshot.data!.docs;
+                final users =
+                    snapshot.data!.docs;
 
                 return ListView.builder(
                   itemCount: users.length,
+
                   itemBuilder: (context, index) {
                     final doc = users[index];
 
                     final data =
-                        doc.data() as Map<String, dynamic>;
+                        doc.data()
+                            as Map<String, dynamic>;
 
-                    final String name =
-                        data['name']?.toString() ?? '';
+                    final name =
+                        data["name"]?.toString() ?? "";
 
-                    final String email =
-                        data['email']?.toString() ?? '';
+                    final email =
+                        data["email"]?.toString() ?? "";
 
-                    final String age =
-                        data['age']?.toString() ?? '';
+                    final age =
+                        data["age"]?.toString() ?? "";
 
-                    final String status =
-                        data['status']?.toString() ?? 'pending';
+                    final status =
+                        data["status"]
+                                ?.toString()
+                                .toLowerCase() ??
+                            "pending";
 
                     return Card(
+                      margin:
+                          const EdgeInsets.only(bottom: 10),
+
                       child: ListTile(
-                        title: Text(name),
+                        leading: CircleAvatar(
+                          child: Text(
+                            name.isNotEmpty
+                                ? name[0].toUpperCase()
+                                : "?",
+                          ),
+                        ),
+
+                        title: Text(
+                          name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
                         subtitle: Text(
                           "$email\nAge: $age\nStatus: $status",
                         ),
+
                         isThreeLine: true,
-                        trailing: PopupMenuButton<String>(
+
+                        trailing:
+                            PopupMenuButton<String>(
                           onSelected: (value) {
-                            if (value == 'approve') {
-                              approveduser(doc.id);
-                            } else if (value == 'reject') {
-                              rejectuser(doc.id);
-                            } else if (value == 'edit') {
-                              edituser(doc.id, data);
-                            } else if (value == 'delete') {
-                              deleteuser(doc.id);
+                            if (value == "approve") {
+                              approveUser(doc.id);
+                            }
+
+                            if (value == "reject") {
+                              rejectUser(doc.id);
+                            }
+
+                            if (value == "edit") {
+                              editUser(
+                                doc.id,
+                                data,
+                              );
+                            }
+
+                            if (value == "delete") {
+                              deleteUser(doc.id);
                             }
                           },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'approve',
-                              child: Text("Approve"),
-                            ),
-                            const PopupMenuItem(
-                              value: 'reject',
-                              child: Text("Reject"),
-                            ),
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Text("Edit"),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text("Delete"),
-                            ),
-                          ],
+
+                          itemBuilder: (context) {
+                            return const [
+                              PopupMenuItem(
+                                value: "approve",
+                                child: Text("Approve"),
+                              ),
+
+                              PopupMenuItem(
+                                value: "reject",
+                                child: Text("Reject"),
+                              ),
+
+                              PopupMenuItem(
+                                value: "edit",
+                                child: Text("Edit"),
+                              ),
+
+                              PopupMenuItem(
+                                value: "delete",
+                                child: Text("Delete"),
+                              ),
+                            ];
+                          },
                         ),
                       ),
                     );
@@ -891,19 +1051,24 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // ================= Build =================
+  // =========================================================
+  // BUILD
+  // =========================================================
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      dashboadhome(),
-      userpage(),
-      productpage(),
+    final pages = [
+      dashboardHome(),
+      userPage(),
+      productPage(),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Admin Dashboard"),
+        title: const Text(
+          "Admin Dashboard",
+        ),
+
         actions: [
           IconButton(
             onPressed: logout,
@@ -914,22 +1079,27 @@ class _DashboardState extends State<Dashboard> {
 
       body: pages[selectIndex],
 
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar:
+          BottomNavigationBar(
         currentIndex: selectIndex,
+
         onTap: (index) {
           setState(() {
             selectIndex = index;
           });
         },
+
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
             label: "Dashboard",
           ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: "Users",
           ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
             label: "Products",
